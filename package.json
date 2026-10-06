@@ -1,7 +1,13 @@
 {
   "name": "fantasy-hockey-command-center",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "private": true,
-  "scripts": {"start":"node server.js"},
-  "dependencies":{"express":"^4.21.2","express-session":"^1.18.1","fast-xml-parser":"^4.5.3"}
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "fast-xml-parser": "^4.5.3"
+  }
 }
