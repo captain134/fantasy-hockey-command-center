@@ -3,7 +3,7 @@ WORKDIR /app
 LABEL org.opencontainers.image.title="IceIQ Fantasy Hockey Command Center" \
       org.opencontainers.image.description="Matchup-first fantasy hockey intelligence for Unraid" \
       org.opencontainers.image.source="https://github.com/captain134/fantasy-hockey-command-center" \
-      org.opencontainers.image.version="5.0.0"
+      org.opencontainers.image.version="5.1.0"
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY . .
