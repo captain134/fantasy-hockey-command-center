@@ -11,14 +11,11 @@ const LINEUP={C:2,LW:2,RW:2,D:4,Util:1,G:2};
 function eligible(p,slot){const ps=String(p.pos||'').split(',');if(slot==='Util')return !ps.includes('G');return ps.includes(slot)}
 function optimizeDay(players,date){
  const playing=players.filter(p=>p.projection&&p.schedule?.some(g=>g.date===date)&&!['IR','IR+'].includes(p.slot));
- const slots=Object.entries(LINEUP).flatMap(([slot,count])=>Array.from({length:count},()=>slot));
- const candidates=playing.map(p=>({...p,value:p.projection.fpPerGame||0})).sort((a,b)=>b.value-a.value);
- let best={value:-Infinity,used:new Set(),assign:[]};
- function walk(i,used,value,assign){if(i===slots.length){if(value>best.value)best={value,used:new Set(used),assign:[...assign]};return}
-   walk(i+1,used,value,assign);
-   for(let j=0;j<candidates.length;j++){if(used.has(j)||!eligible(candidates[j],slots[i]))continue;used.add(j);assign.push({slot:slots[i],name:candidates[j].name,value:candidates[j].value});walk(i+1,used,value+candidates[j].value,assign);assign.pop();used.delete(j)}
- }
- walk(0,new Set(),0,[]);return {date,projected:+Math.max(0,best.value).toFixed(1),assignments:best.assign,bench:playing.filter(p=>!best.assign.some(a=>a.name===p.name)).map(p=>({name:p.name,fp:p.projection.fpPerGame}))}
+ const slotNames=['C','LW','RW','D','Util','G'],caps=slotNames.map(x=>LINEUP[x]),key=a=>a.join(',');
+ let dp=new Map([[key([0,0,0,0,0,0]),{counts:[0,0,0,0,0,0],value:0,assign:[]}]]);
+ for(const p of playing){const next=new Map(dp);for(const state of dp.values())for(let i=0;i<slotNames.length;i++){if(state.counts[i]>=caps[i]||!eligible(p,slotNames[i]))continue;const counts=[...state.counts];counts[i]++;const value=state.value+(p.projection.fpPerGame||0),k=key(counts),old=next.get(k);if(!old||value>old.value)next.set(k,{counts,value,assign:[...state.assign,{slot:slotNames[i],name:p.name,value:p.projection.fpPerGame||0}]})}dp=next}
+ const best=[...dp.values()].sort((a,b)=>b.value-a.value)[0]||{value:0,assign:[]};
+ return {date,projected:+best.value.toFixed(1),assignments:best.assign,bench:playing.filter(p=>!best.assign.some(a=>a.name===p.name)).map(p=>({name:p.name,fp:p.projection.fpPerGame}))}
 }
 async function playerIntel(p,w,map){const nhl=await resolve(p.name,p.team);if(!nhl)return {...p,nhl:null,schedule:map[p.team]||[],projection:null};let log=null;try{log=await cached(`https://api-web.nhle.com/v1/player/${nhl.id}/game-log/now`,300000)}catch{}const games=(log?.gameLog||[]).filter(g=>g.gameTypeId===2||g.gameType===2||g.gameDate).slice(0,30),fps=games.map(g=>fantasy(g,nhl.position,w)),recent=fps.slice(0,5),seasonAvg=fps.length?fps.reduce((a,b)=>a+b,0)/fps.length:0,recentAvg=recent.length?recent.reduce((a,b)=>a+b,0)/recent.length:seasonAvg,weighted=seasonAvg*.55+recentAvg*.45,sched=map[nhl.team]||map[p.team]||[],confidence=Math.min(95,45+Math.min(games.length,20)*2.5);return {...p,nhl,schedule:sched,projection:{gamesLogged:games.length,seasonAvg:+seasonAvg.toFixed(2),recentAvg:+recentAvg.toFixed(2),fpPerGame:+weighted.toFixed(2),next7:+(weighted*sched.length).toFixed(1),confidence:+confidence.toFixed(0),last5:games.slice(0,5).map((g,i)=>({date:g.gameDate,opp:g.opponentAbbrev||g.opponentCommonName?.default||'',fp:+(fps[i]||0).toFixed(1)}))}}}
 app.get('/api/manual',(q,r)=>r.json({...manual,updatedAt:new Date().toISOString()}));app.get('/api/status',(q,r)=>r.json({connected:fs.existsSync(TOK),configured:!!(CLIENT_ID&&CLIENT_SECRET&&PUBLIC_URL),leagueId:LEAGUE,teamId:TEAM,publicUrl:PUBLIC_URL,mode:'hybrid',version:VERSION}));app.get('/api/nhl/schedule',async(q,r)=>{try{r.json(await cached('https://api-web.nhle.com/v1/schedule/now',300000))}catch(e){r.status(502).json({error:e.message})}});
