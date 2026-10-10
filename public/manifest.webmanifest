@@ -1,1 +1,25 @@
-{"name":"IceIQ · Fantasy Hockey Command Center","short_name":"IceIQ","start_url":"/","display":"standalone","background_color":"#05070b","theme_color":"#05070b","description":"Matchup-first fantasy hockey intelligence.","icons":[{"src":"/iceiq-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{
+  "name": "IceIQ · Fantasy Hockey Command Center",
+  "short_name": "IceIQ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070b",
+  "theme_color": "#05070b",
+  "description": "IceIQ NHL fantasy matchup and roster analytics",
+  "icons": [
+    {
+      "src": "/iceiq-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/iceiq-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "id": "/",
+  "scope": "/"
+}
