@@ -1,6 +1,6 @@
 {
   "name": "fantasy-hockey-command-center",
-  "version": "5.4.0",
+  "version": "5.5.0",
   "private": true,
   "scripts": {
     "start": "node server.js"
